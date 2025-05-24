@@ -1,13 +1,14 @@
-const db = require('../models/db');
+import db from '../config/db.js';  // 注意要加 .js 副檔名，ESM 規定
 
-exports.signup = (req, res) => {
+export const signup = (req, res) => {
   const { username, password, email, phone } = req.body;
 
   const role = 'user'; // 固定只能註冊 user
   const violation_count = 0;
 
-  const sql = `INSERT INTO user (username, password, email, phone, role, violation_count)
-               VALUES (?, ?, ?, ?, ?, ?)`;
+  const sql = `
+    INSERT INTO user (username, password, email, phone, role, violation_count)
+    VALUES (?, ?, ?, ?, ?, ?)`;
 
   db.query(sql, [username, password, email, phone, role, violation_count], (err, result) => {
     if (err) {
@@ -20,10 +21,11 @@ exports.signup = (req, res) => {
   });
 };
 
-exports.login = (req, res) => {
+export const login = (req, res) => {
   const { username, password } = req.body;
 
   const sql = `SELECT * FROM user WHERE username = ? AND password = ?`;
+
   db.query(sql, [username, password], (err, results) => {
     if (err) return res.status(500).json({ message: '伺服器錯誤' });
     if (results.length === 0) return res.status(401).json({ message: '帳號或密碼錯誤' });

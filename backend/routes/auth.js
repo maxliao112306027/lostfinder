@@ -1,11 +1,12 @@
-const express = require('express');
+import express from 'express';
+import { signup, login } from '../controllers/authController.js';
+
 const router = express.Router();
-const authController = require('../controllers/authController');
 
 // 註冊 API
-router.post('/signup', authController.signup);
+router.post('/signup', signup);
 
 // 登入 API
-router.post('/login', authController.login);
+router.post('/login', login);
 
-module.exports = router;
+export default router;

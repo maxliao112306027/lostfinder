@@ -1,3 +1,11 @@
+dotenv.config(); // 必須在最前面呼叫！
+
+console.log('✅ ENV 測試:', {
+  DB_USER: process.env.DB_USER,
+  DB_PASSWORD: process.env.DB_PASSWORD,
+  DB_NAME: process.env.DB_NAME,
+});
+
 import mysql from 'mysql2/promise';
 import dotenv from 'dotenv';
 

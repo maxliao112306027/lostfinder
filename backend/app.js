@@ -1,10 +1,14 @@
 import express from "express";
-import cors from "cors";
 import dotenv from "dotenv";
 import pool from "./config/db.js";
 
 dotenv.config();
 import authRoutes from './routes/auth.js';
+// app.js 中
+import { createRequire } from 'module';
+const require = createRequire(import.meta.url);
+
+const cors = require('cors');
 
 
 const app = express();
