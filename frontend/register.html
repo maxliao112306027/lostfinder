@@ -1,4 +1,4 @@
-<!-- frontend/register.html -->
+<!-- register.html 通用版：Live Server + Express 都能用 -->
 <!DOCTYPE html>
 <html lang="zh-Hant">
 <head>
@@ -15,12 +15,6 @@
       height: 100vh;
       margin: 0;
     }
-
-    h2 {
-      color: #7b0046;
-      margin-bottom: 20px;
-    }
-
     form {
       background: #fff;
       padding: 30px 40px;
@@ -30,7 +24,6 @@
       flex-direction: column;
       width: 320px;
     }
-
     input {
       margin: 10px 0;
       padding: 12px;
@@ -38,7 +31,6 @@
       border-radius: 6px;
       font-size: 16px;
     }
-
     button {
       background-color: #7b0046;
       color: white;
@@ -50,97 +42,69 @@
       margin-top: 15px;
       cursor: pointer;
     }
-
-    button:hover {
-      background-color: #a70b65;
-    }
-
     #message {
       margin-top: 10px;
       color: red;
       text-align: center;
     }
-
-    .footer {
-      margin-top: 20px;
-      font-size: 14px;
-      color: #999;
-    }
   </style>
 </head>
 <body>
-  <h2>建立 LostFinder 帳號</h2>
+  <h2>註冊 LostFinder 帳號</h2>
   <form id="registerForm">
-    <input type="text" id="username" placeholder="帳號/學號" required />
-    <input type="password" id="password" placeholder="密碼" required />
-    <input type="email" id="email" placeholder="電子郵件" required />
-    <input type="tel" id="phone" placeholder="聯絡電話" required />
+    <input type="text" id="username" placeholder="帳號/學號" required>
+    <input type="password" id="password" placeholder="密碼" required>
+    <input type="email" id="email" placeholder="電子郵件" required>
+    <input type="tel" id="phone" placeholder="手機號碼" required>
     <button type="submit">註冊</button>
     <p id="message"></p>
   </form>
 
-  <div class="footer">
-    已經有帳號？<a href="http://127.0.0.1:5500/frontend/login.html">點我登入</a>
-  </div>
-<div class="footer">
-    如果無法登入請聯絡系統管理員:1112306057@g.nccu.edu.tw
   <script>
-  
-  document.getElementById('registerForm').addEventListener('submit', async function (e) {
-    e.preventDefault();
+    const baseURL = location.port === '5500' ? 'http://localhost:3000' : '';
+    const goTo = (page) => {
+      window.location.href = location.port === '5500' ? `./${page}` : `/${page}`;
+    };
 
-    const username = document.getElementById('username').value.trim();
-    const password = document.getElementById('password').value.trim();
-    const email = document.getElementById('email').value.trim();
-    const phone = document.getElementById('phone').value.trim();
-    const msg = document.getElementById('message');
+    document.getElementById('registerForm').addEventListener('submit', async function (e) {
+      e.preventDefault();
 
-    // ✅ 前端驗證邏輯
-    if (username.length < 9) {
-      msg.textContent = '帳號長度至少9字元';
-      return;
-    }
-    if (password.length < 8 || !hasLetter.test(password)) {
-       msg.textContent = '密碼需至少8碼並包含英文字母';
-      return;
-    }
-    const emailPattern = /^[^\s@]+@[^\s@]+\.[^\s@]+$/;
-    if (!emailPattern.test(email)) {
-      msg.textContent = '電子郵件格式錯誤';
-      return;
-    }
-    const phonePattern = /^09\d{8}$/;
-    if (!phonePattern.test(phone)) {
-      msg.textContent = '手機號碼格式錯誤（需為09開頭共10碼）';
-      return;
-    }
+      const username = document.getElementById('username').value.trim();
+      const password = document.getElementById('password').value.trim();
+      const email = document.getElementById('email').value.trim();
+      const phone = document.getElementById('phone').value.trim();
+      const msg = document.getElementById('message');
 
-    // ✅ 通過驗證，送出資料
-    try {
-      const res = await fetch('http://localhost:3000/api/register', {
-        method: 'POST',
-        headers: { 'Content-Type': 'application/json' },
-        body: JSON.stringify({ username, password, email, phone })
-      });
+      const hasLetter = /[a-zA-Z]/;
+      const emailPattern = /^[^\s@]+@[^\s@]+\.[^\s@]+$/;
+      const phonePattern = /^09\d{8}$/;
 
-      const data = await res.json();
+      if (username.length < 9) return msg.textContent = '帳號至少 9 字元';
+      if (password.length < 8 || !hasLetter.test(password)) return msg.textContent = '密碼需至少 8 碼並包含英文字母';
+      if (!emailPattern.test(email)) return msg.textContent = '電子郵件格式錯誤';
+      if (!phonePattern.test(phone)) return msg.textContent = '手機號碼格式錯誤';
 
-      if (res.ok) {
-        msg.style.color = 'green';
-        msg.textContent = '註冊成功，請登入';
-        setTimeout(() => {
-          window.location.href = 'http://127.0.0.1:5500/frontend/login.html';
-        }, 1500);
-      } else {
-        msg.style.color = 'red';
-        msg.textContent = '註冊失敗' + data.message;
+      try {
+        const res = await fetch(`${baseURL}/api/signup`, {
+          method: 'POST',
+          headers: { 'Content-Type': 'application/json' },
+          body: JSON.stringify({ username, password, email, phone })
+        });
+
+        const data = await res.json();
+        if (res.ok) {
+          msg.style.color = 'green';
+          msg.textContent = '✅ 註冊成功，3 秒後前往登入頁';
+          setTimeout(() => goTo('login.html'), 3000);
+        } else {
+          msg.style.color = 'red';
+          msg.textContent = '❌ ' + data.message;
+        }
+      } catch (err) {
+        msg.textContent = '❌ 系統錯誤';
+        console.error(err);
       }
-    } catch (err) {
-      console.error(err);
-      msg.textContent = '系統錯誤';
-    }
-  });
-</script>
-
+    });
+  </script>
 </body>
-</html>  
+</html>
