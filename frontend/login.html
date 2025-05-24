@@ -1,9 +1,8 @@
-<!-- frontend/login.html -->
 <!DOCTYPE html>
 <html lang="zh-Hant">
 <head>
   <meta charset="UTF-8">
-  <title>Login | LostFinder</title>
+  <title>登入 | LostFinder</title>
   <style>
     body {
       font-family: "Ancizar Serif", serif;
@@ -92,19 +91,17 @@
       const msg = document.getElementById('message');
       msg.style.color = 'red';
 
-      // ✅ 基本輸入驗證
+      const hasLetter = /[a-zA-Z]/;
       if (!username) {
         msg.textContent = '請輸入帳號';
         return;
       }
 
-      const hasLetter = /[a-zA-Z]/;
       if (password.length < 8 || !hasLetter.test(password)) {
         msg.textContent = '密碼需至少8碼並包含英文字母';
         return;
       }
 
-      // ✅ 通過驗證後發送登入請求
       try {
         const res = await fetch('http://localhost:3000/api/login', {
           method: 'POST',
@@ -118,10 +115,8 @@
           msg.style.color = 'green';
           msg.textContent = '✅ 登入成功，請稍後...';
 
-          // ✅ 儲存登入者資訊
           localStorage.setItem('user', JSON.stringify(data.user));
 
-          // ✅ 根據角色導向不同頁面
           setTimeout(() => {
             if (data.user.role === 'admin') {
               window.location.href = '/admin_dashboard.html';
@@ -133,7 +128,7 @@
           msg.textContent = '❌ 登入失敗：' + data.message;
         }
       } catch (err) {
-        console.error(err);
+        console.error('❌ 系統錯誤：', err);
         msg.textContent = '❌ 系統錯誤，請稍後再試';
       }
     });
