@@ -1,6 +1,7 @@
 import express from "express";
 import dotenv from "dotenv";
 import pool from "./config/db.js";
+import lostItemRoutes from './routes/lostItem.js';
 
 dotenv.config();
 import authRoutes from './routes/auth.js';
@@ -17,6 +18,7 @@ const PORT = process.env.PORT || 3000;
 
 app.use(cors());
 app.use(express.json());
+app.use(lostItemRoutes);
 
 app.get("/", (req, res) => {
   res.send("LostFinder backend is running.");
