@@ -3,154 +3,108 @@
 <head>
   <meta charset="UTF-8">
   <meta name="viewport" content="width=device-width, initial-scale=1.0">
-  <title>使用者主頁 - NCCU Lost & Found</title>
+  <title>使用者主頁 - NCCU LostFinder</title>
   <link href="https://cdn.jsdelivr.net/npm/bootstrap@5.3.0/dist/css/bootstrap.min.css" rel="stylesheet">
   <style>
-    body { background: #f8f9fa; }
+    body {
+      font-family: "Ancizar Serif", serif;
+      background: #f8f9fa;
+    }
     .notification { font-size: 1.3rem; cursor: pointer; }
-    .sidebar { min-height: 100vh; background-color: #2c3e50; color: white; padding: 1rem; }
-    .sidebar a { color: white; text-decoration: none; display: block; margin: 0.5rem 0; padding: 0.5rem; border-radius: 4px; }
-    .sidebar a:hover { background: #34495e; }
-    section { display: none; padding: 1rem; background: white; margin-bottom: 1rem; border-radius: 8px; }
-    section.active { display: block; }
+    nav a {
+      color: white;
+      text-decoration: none;
+      padding: 0.5rem 1rem;
+      border-radius: 5px;
+    }
+    nav a:hover {
+      background-color: #495057;
+    }
+    section {
+      display: none;
+      padding: 1rem;
+      background: white;
+      margin-bottom: 1rem;
+      border-radius: 8px;
+    }
+    section.active {
+      display: block;
+    }
   </style>
 </head>
 <body>
 
-    <header class="bg-primary text-white px-4 py-3 d-flex justify-content-between align-items-center">
-        <div class="fs-4 fw-bold">NCCU LostFinder</div>
-        <form class="d-flex" style="max-width: 400px; width: 100%;">
-          <input class="form-control me-2" type="search" placeholder="查詢遺失物…" aria-label="Search">
-          <button class="btn btn-light" type="submit">搜尋</button>
-  </form>
-  
+<header class="bg-primary text-white px-4 py-3 d-flex justify-content-between align-items-center">
+  <div class="d-flex align-items-center">
+    <div class="fs-4 fw-bold">NCCU LostFinder</div>
+  </div>
+  <form class="d-flex" style="max-width: 400px; width: 100%;">
+    <input class="form-control me-2" type="search" placeholder="查詢遺失物…" aria-label="Search">
+    <button class="btn btn-light" type="submit">搜尋</button>
   </form>
   <div class="d-flex align-items-center gap-3">
     <div class="notification">🔔</div>
-    <div>使用者：Max</div>
+    <div id="username-display">使用者：</div>
     <button class="btn btn-outline-light btn-sm" onclick="logout()">登出</button>
   </div>
 </header>
 
-<div class="container-fluid">
-  <div class="row">
-    <div class="col-md-2 sidebar">
-      <h5>📂 功能選單</h5>
-      <a href="#" onclick="showSection('search')">🔍 查詢失物</a>
-      <a href="#" onclick="showSection('register')">📝 登記失物</a>
-      <a href="#" onclick="showSection('claims')">📬 我的認領</a>
-      <a href="#" onclick="showSection('history')">📜 我的紀錄</a>
-      <a href="#" onclick="showSection('announcement')">📢 公告</a>
-      <a href="#" onclick="showSection('comment')">💬 留言通知</a>
-    </div>
-
-    <div class="col-md-10">
-      <section id="search" class="active">
-        <div class="row mt-4" id="search-results">
-          <div class="col-md-4 mb-3">
-            <div class="card h-100">
-              <div class="card-body">
-                <h5 class="card-title">AirPods</h5>
-                <p class="card-text">白色，圖書館遺失，附充電盒</p>
-                <p class="card-text"><small class="text-muted">遺失日期：2025-04-15</small></p>
-                <button class="btn btn-outline-primary btn-sm">申請認領</button>
-              </div>
-            </div>
-          </div>
-          <div class="col-md-4 mb-3">
-            <div class="card h-100">
-              <div class="card-body">
-                <h5 class="card-title">黑色錢包</h5>
-                <p class="card-text">內含學生證與悠遊卡，政大側門附近遺失</p>
-                <p class="card-text"><small class="text-muted">遺失日期：2025-04-12</small></p>
-                <button class="btn btn-outline-primary btn-sm">申請認領</button>
-              </div>
-            </div>
-          </div>
-        </div>
-      </section>
-
-      <section id="register">
-        <h2>登記遺失物</h2>
-        <form>
-          <input type="text" class="form-control mb-2" placeholder="物品名稱">
-          <textarea class="form-control mb-2" placeholder="物品描述"></textarea>
-          <input type="text" class="form-control mb-2" placeholder="遺失地點">
-          <input type="date" class="form-control mb-2">
-          <input type="file" class="form-control mb-2">
-          <button type="submit" class="btn btn-success">送出登記</button>
-        </form>
-      </section>
-
-      <section id="claims">
-        <h2>我的認領申請</h2>
-        <table class="table table-striped">
-          <thead>
-            <tr><th>物品</th><th>狀態</th><th>管理者</th><th>操作</th></tr>
-          </thead>
-          <tbody>
-            <tr>
-              <td>黑色雨傘</td><td>待審核</td><td>admin1</td>
-              <td><button class="btn btn-sm btn-danger">取消申請</button></td>
-            </tr>
-          </tbody>
-        </table>
-      </section>
-
-      <section id="history">
-        <h2>我的遺失紀錄</h2>
-        <table class="table">
-          <thead>
-            <tr><th>物品</th><th>遺失地點</th><th>日期</th><th>狀態</th></tr>
-          </thead>
-          <tbody>
-            <tr>
-              <td>悠遊卡</td><td>學生餐廳</td><td>2025-04-01</td><td>未找回</td>
-            </tr>
-          </tbody>
-        </table>
-        <div class="alert alert-warning">建議：常遺失於學生餐廳，請提高注意。</div>
-      </section>
-
-      <section id="announcement">
-        <h2>系統公告</h2>
-        <div class="card p-3">
-          <h5>📌 期中週公告</h5>
-          <p>本週開放時間異動，請注意公告內容。</p>
-        </div>
-      </section>
-
-      <section id="comment">
-        <h2>留言與通知</h2>
-        <div class="mb-3">
-          <h5>留言區</h5>
-          <textarea class="form-control" placeholder="寫下你的留言..."></textarea>
-          <button class="btn btn-secondary mt-2">送出留言</button>
-        </div>
-        <div>
-          <h5>系統通知</h5>
-          <ul>
-            <li>🔔 有一筆新物品與你遺失紀錄相符</li>
-            <li>🔔 你的認領申請已被審核</li>
-          </ul>
-        </div>
-      </section>
-    </div>
+<nav class="bg-dark text-white px-4 py-2">
+  <div class="d-flex flex-wrap gap-3 justify-content-center">
+    <a href="#" onclick="showSection('search')">🔍 查詢失物</a>
+    <a href="#" onclick="showSection('register')">📝 登記失物</a>
+    <a href="#" onclick="showSection('claims')">📬 我的認領</a>
+    <a href="#" onclick="showSection('history')">📜 我的紀錄</a>
+    <a href="#" onclick="showSection('announcement')">📢 公告</a>
+    <a href="#" onclick="showSection('comment')">💬 留言通知</a>
   </div>
+</nav>
+
+<div id="mainContent" class="container mt-3">
+  <section id="search" class="active">
+    <div id="lostItems"></div>
+  </section>
+  <section id="register">登記失物內容</section>
+  <section id="claims">認領內容</section>
+  <section id="history">紀錄內容</section>
+  <section id="announcement">公告內容</section>
+  <section id="comment">留言內容</section>
 </div>
 
 <script>
   function showSection(id) {
-    document.querySelectorAll('section').forEach(sec => {
-      sec.classList.remove('active');
-    });
+    document.querySelectorAll('section').forEach(sec => sec.classList.remove('active'));
     document.getElementById(id).classList.add('active');
   }
 
   function logout() {
-    alert("已登出，導回登入頁");
-    window.location.href = "/user_login.html";
+    localStorage.removeItem('username');
+    window.location.href = 'http://127.0.0.1:5500/frontend/login.html';
   }
+
+  window.onload = () => {
+    const username = localStorage.getItem('username') || '未知使用者';
+    document.getElementById('username-display').textContent = '使用者：' + username;
+
+    fetch('http://localhost:3000/api/items')
+      .then(res => res.json())
+      .then(data => {
+        const lostItemsDiv = document.getElementById('lostItems');
+        lostItemsDiv.innerHTML = data.map(item => `
+          <div class="card mb-3">
+            <div class="card-body">
+              <h5 class="card-title">${item.item_name}</h5>
+              <p class="card-text">遺失地點：${item.lost_location}</p>
+              <p class="card-text"><small class="text-muted">${new Date(item.lost_date).toLocaleDateString()}</small></p>
+            </div>
+          </div>
+        `).join('');
+      })
+      .catch(err => {
+        document.getElementById('lostItems').innerHTML = '<p class="text-danger">無法載入遺失物資料</p>';
+        console.error(err);
+      });
+  };
 </script>
 
 </body>
