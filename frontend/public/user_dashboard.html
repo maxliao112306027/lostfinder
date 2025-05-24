@@ -1,15 +1,12 @@
 <!DOCTYPE html>
 <html lang="zh-Hant">
 <head>
-  <meta charset="UTF-8">
+  <meta charset="UTF-8" />
   <meta name="viewport" content="width=device-width, initial-scale=1.0">
   <title>使用者主頁 - NCCU LostFinder</title>
   <link href="https://cdn.jsdelivr.net/npm/bootstrap@5.3.0/dist/css/bootstrap.min.css" rel="stylesheet">
   <style>
-    body {
-      font-family: "Ancizar Serif", serif;
-      background: #f8f9fa;
-    }
+    body { font-family: "Ancizar Serif", serif; background: #f8f9fa; }
     .notification { font-size: 1.3rem; cursor: pointer; }
     nav a {
       color: white;
@@ -17,27 +14,15 @@
       padding: 0.5rem 1rem;
       border-radius: 5px;
     }
-    nav a:hover {
-      background-color: #495057;
-    }
-    section {
-      display: none;
-      padding: 1rem;
-      background: white;
-      margin-bottom: 1rem;
-      border-radius: 8px;
-    }
-    section.active {
-      display: block;
-    }
+    nav a:hover { background-color: #495057; }
+    section { display: none; padding: 1rem; background: white; margin-bottom: 1rem; border-radius: 8px; }
+    section.active { display: block; }
   </style>
 </head>
 <body>
 
 <header class="bg-primary text-white px-4 py-3 d-flex justify-content-between align-items-center">
-  <div class="d-flex align-items-center">
-    <div class="fs-4 fw-bold">NCCU LostFinder</div>
-  </div>
+  <div class="fs-4 fw-bold">NCCU LostFinder</div>
   <form class="d-flex" style="max-width: 400px; width: 100%;">
     <input class="form-control me-2" type="search" placeholder="查詢遺失物…" aria-label="Search">
     <button class="btn btn-light" type="submit">搜尋</button>
@@ -61,50 +46,134 @@
 </nav>
 
 <div id="mainContent" class="container mt-3">
-  <section id="search" class="active">
-    <div id="lostItems"></div>
-  </section>
-  <section id="register">登記失物內容</section>
-  <section id="claims">認領內容</section>
-  <section id="history">紀錄內容</section>
-  <section id="announcement">公告內容</section>
-  <section id="comment">留言內容</section>
+  <section id="search" class="active"><div id="lostItems">載入中...</div></section>
+  <section id="register">登記失物內容（未實作）</section>
+  <section id="claims"><h3>我的認領申請</h3><div id="myClaims">載入中...</div></section>
+  <section id="history"><h3>我的失物登記紀錄</h3><div id="myHistory">載入中...</div></section>
+  <section id="announcement"><h3>最新公告</h3><div id="announcementList">載入中...</div></section>
+  <section id="comment"><h3>留言通知</h3><div id="myMessages">載入中...</div></section>
 </div>
 
 <script>
   function showSection(id) {
     document.querySelectorAll('section').forEach(sec => sec.classList.remove('active'));
     document.getElementById(id).classList.add('active');
+
+    if (id === 'search') loadLostItems();
+    if (id === 'announcement') loadAnnouncements();
+    if (id === 'claims') loadMyClaims();
+    if (id === 'history') loadMyHistory();
+    if (id === 'comment') loadMyMessages();
   }
 
   function logout() {
-    localStorage.removeItem('username');
-    window.location.href = 'http://127.0.0.1:5500/frontend/login.html';
+    localStorage.removeItem('user');
+    window.location.href = '/login.html';
   }
 
   window.onload = () => {
-    const username = localStorage.getItem('username') || '未知使用者';
-    document.getElementById('username-display').textContent = '使用者：' + username;
-
-    fetch('http://localhost:3000/api/items')
-      .then(res => res.json())
-      .then(data => {
-        const lostItemsDiv = document.getElementById('lostItems');
-        lostItemsDiv.innerHTML = data.map(item => `
-          <div class="card mb-3">
-            <div class="card-body">
-              <h5 class="card-title">${item.item_name}</h5>
-              <p class="card-text">遺失地點：${item.lost_location}</p>
-              <p class="card-text"><small class="text-muted">${new Date(item.lost_date).toLocaleDateString()}</small></p>
-            </div>
-          </div>
-        `).join('');
-      })
-      .catch(err => {
-        document.getElementById('lostItems').innerHTML = '<p class="text-danger">無法載入遺失物資料</p>';
-        console.error(err);
-      });
+    const user = JSON.parse(localStorage.getItem('user'));
+    if (!user) return logout();
+    document.getElementById('username-display').textContent = '使用者：' + user.username;
+    loadLostItems();
   };
+
+  async function loadLostItems() {
+    const container = document.getElementById('lostItems');
+    container.innerHTML = '載入中...';
+    try {
+      const res = await fetch('/api/items');
+      const data = await res.json();
+      container.innerHTML = data.map(item => `
+        <div class="card mb-3">
+          <div class="card-body">
+            <h5 class="card-title">${item.item_name}</h5>
+            <p class="card-text">遺失地點：${item.lost_location || '未知'}</p>
+            <p class="card-text"><small class="text-muted">${new Date(item.lost_date).toLocaleDateString()}</small></p>
+          </div>
+        </div>
+      `).join('');
+    } catch (err) {
+      console.error(err);
+      container.innerHTML = '❌ 載入失敗';
+    }
+  }
+
+  async function loadAnnouncements() {
+    const container = document.getElementById('announcementList');
+    container.innerHTML = '載入中...';
+    try {
+      const res = await fetch('/api/announcements');
+      const data = await res.json();
+      container.innerHTML = data.map(a => `
+        <div class="border-bottom mb-3 pb-2">
+          <h5>${a.title}</h5>
+          <p>${a.content}</p>
+          <small class="text-muted">${new Date(a.created_at).toLocaleDateString()}</small>
+        </div>
+      `).join('');
+    } catch (err) {
+      console.error(err);
+      container.innerHTML = '❌ 載入失敗';
+    }
+  }
+
+  async function loadMyClaims() {
+    const user = JSON.parse(localStorage.getItem('user'));
+    const container = document.getElementById('myClaims');
+    container.innerHTML = '載入中...';
+    try {
+      const res = await fetch(`/api/my-claims?user_id=${user.user_id}`);
+      const data = await res.json();
+      container.innerHTML = data.map(c => `
+        <div class="border p-3 mb-2">
+          <strong>物品：</strong>${c.item_name}<br>
+          <strong>理由：</strong>${c.reason}<br>
+          <span class="badge bg-${c.status === 'approved' ? 'success' : c.status === 'rejected' ? 'danger' : 'secondary'}">${c.status}</span>
+        </div>
+      `).join('');
+    } catch (err) {
+      console.error(err);
+      container.innerHTML = '❌ 載入失敗';
+    }
+  }
+
+  async function loadMyHistory() {
+    const user = JSON.parse(localStorage.getItem('user'));
+    const container = document.getElementById('myHistory');
+    container.innerHTML = '載入中...';
+    try {
+      const res = await fetch(`/api/my-items?user_id=${user.user_id}`);
+      const data = await res.json();
+      container.innerHTML = data.map(h => `
+        <div class="border-bottom py-2">
+          ${h.item_name}（狀態：${h.status}） - ${new Date(h.created_at).toLocaleDateString()}
+        </div>
+      `).join('');
+    } catch (err) {
+      console.error(err);
+      container.innerHTML = '❌ 載入失敗';
+    }
+  }
+
+  async function loadMyMessages() {
+    const user = JSON.parse(localStorage.getItem('user'));
+    const container = document.getElementById('myMessages');
+    container.innerHTML = '載入中...';
+    try {
+      const res = await fetch(`/api/my-messages?user_id=${user.user_id}`);
+      const data = await res.json();
+      container.innerHTML = data.map(m => `
+        <div class="border p-2 mb-2">
+          <strong>${m.from_user}：</strong> ${m.content}<br>
+          <small class="text-muted">${new Date(m.created_at).toLocaleString()}</small>
+        </div>
+      `).join('');
+    } catch (err) {
+      console.error(err);
+      container.innerHTML = '❌ 載入失敗';
+    }
+  }
 </script>
 
 </body>
