@@ -1,13 +1,9 @@
-
 <!-- frontend/login.html -->
-
-
 <!DOCTYPE html>
 <html lang="zh-Hant">
 <head>
   <meta charset="UTF-8">
-  <title>登入 | LostFinder</title>
-
+  <title>Login | LostFinder</title>
   <style>
     body {
       font-family: "Ancizar Serif", serif;
@@ -63,87 +59,52 @@
       margin-top: 30px;
       font-size: 14px;
       color: #999;
+      text-align: center;
     }
 
     #message {
       margin-top: 10px;
-      color: red;
       text-align: center;
     }
   </style>
 </head>
 <body>
   <h2>LostFinder 校園失物系統</h2>
+
   <form id="loginForm">
-    <input type="text" id="username" placeholder="Account" required />
-    <input type="password" id="password" placeholder="Password" required />
-    <button type="submit">Login</button>
+    <input type="text" id="username" placeholder="帳號 Account" required />
+    <input type="password" id="password" placeholder="密碼 Password" required />
+    <button type="submit">登入 / Login</button>
     <p id="message"></p>
   </form>
 
   <div class="footer">
-    如果無法登入請聯絡系統管理員:1112306057@g.nccu.edu.tw
+    還沒有帳號？<a href="http://127.0.0.1:5500/frontend/register.html">點我註冊</a><br />
+    無法登入請聯絡系統管理員：1112306057@g.nccu.edu.tw
   </div>
 
   <script>
     document.getElementById('loginForm').addEventListener('submit', async function (e) {
-  e.preventDefault();
-  const username = document.getElementById('username').value.trim();
-  const password = document.getElementById('password').value.trim();
-  const msg = document.getElementById('message');
-
-  // ✅ 基本驗證邏輯
-  if (username.length === 0) {
-    msg.style.color = 'red';
-    msg.textContent = '請輸入帳號';
-    return;
-  }
-
-  if (password.length < 8 || !hasLetter.test(password)) {
-       msg.textContent = '密碼需至少8碼並包含英文字母';
-      return;
-  }
-
-  // ✅ 通過驗證，送出 API
-  try {
-    const res = await fetch('http://localhost:3000/api/login', {
-      method: 'POST',
-      headers: { 'Content-Type': 'application/json' },
-      body: JSON.stringify({ username, password })
-    });
-
-    const data = await res.json();
-
-    if (res.ok) {
-      msg.style.color = 'green';
-      msg.textContent = '登入成功';
-      // window.location.href = '/dashboard.html';
-    } else {
-      msg.style.color = 'red';
-      msg.textContent = '登入失敗' + data.message;
-    }
-  } catch (err) {
-    console.error(err);
-    msg.textContent = '系統錯誤，請稍後再試';
-  }
-});
-
-</head>
-<body>
-  <h2>使用者登入</h2>
-  <form id="loginForm">
-    <input type="text" id="username" placeholder="帳號" required />
-    <input type="password" id="password" placeholder="密碼" required />
-    <button type="submit">登入</button>
-  </form>
-  <p id="loginMessage"></p>
-
-  <script>
-    document.getElementById('loginForm').addEventListener('submit', async function (e) {
       e.preventDefault();
-      const username = document.getElementById('username').value;
-      const password = document.getElementById('password').value;
 
+      const username = document.getElementById('username').value.trim();
+      const password = document.getElementById('password').value.trim();
+      const msg = document.getElementById('message');
+      msg.style.color = 'red';
+
+      // ✅ 基本輸入驗證
+      if (!username) {
+        msg.textContent = '請輸入帳號';
+        return;
+      }
+
+      const hasLetter = /[a-zA-Z]/;
+      if (password.length < 8 || !hasLetter.test(password)) {
+        msg.textContent = '密碼需至少8碼並包含英文字母';
+        return;
+      }
+
+      // ✅ 通過驗證後發送登入請求
       try {
         const res = await fetch('http://localhost:3000/api/login', {
           method: 'POST',
@@ -152,19 +113,30 @@
         });
 
         const data = await res.json();
+
         if (res.ok) {
-          document.getElementById('loginMessage').textContent = '✅ 登入成功！';
-          // 可選：導向其他頁面
-          // window.location.href = '/dashboard.html';
+          msg.style.color = 'green';
+          msg.textContent = '✅ 登入成功，請稍後...';
+
+          // ✅ 儲存登入者資訊
+          localStorage.setItem('user', JSON.stringify(data.user));
+
+          // ✅ 根據角色導向不同頁面
+          setTimeout(() => {
+            if (data.user.role === 'admin') {
+              window.location.href = '/admin_dashboard.html';
+            } else {
+              window.location.href = '/user_dashboard.html';
+            }
+          }, 1000);
         } else {
-          document.getElementById('loginMessage').textContent = `❌ ${data.message}`;
+          msg.textContent = '❌ 登入失敗：' + data.message;
         }
       } catch (err) {
-        document.getElementById('loginMessage').textContent = '❌ 系統錯誤';
         console.error(err);
+        msg.textContent = '❌ 系統錯誤，請稍後再試';
       }
     });
-
   </script>
 </body>
 </html>
