@@ -8,6 +8,7 @@ import { fileURLToPath } from 'url';
 import { dirname } from 'path';
 import authRoutes from './routes/auth.js';
 
+
 dotenv.config();
 
 const __filename = fileURLToPath(import.meta.url);
