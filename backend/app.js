@@ -2,6 +2,7 @@
 import express from "express";
 import dotenv from "dotenv";
 import pool from "./config/db.js";
+import lostItemRoutes from './routes/lostItem.js';
 import path from 'path';
 import cors from 'cors';
 import { fileURLToPath } from 'url';
@@ -20,6 +21,7 @@ const PORT = process.env.PORT || 3000;
 // ➤ Middleware
 app.use(cors());
 app.use(express.json());
+app.use(lostItemRoutes);
 
 // ➤ API 路由
 app.use('/api', authRoutes);
