@@ -1,4 +1,5 @@
 import * as authService from '../services/authService.js';
+import jwt from 'jsonwebtoken';
 
 // ✅ 註冊
 export const register = async (req, res) => {
@@ -46,8 +47,20 @@ export const login = async (req, res) => {
   try {
     const user = await authService.loginUser(username, password);
 
+     // ✅ JWT 簽發
+    const token = jwt.sign(
+      {
+        user_id: user.user_id,
+        username: user.username,
+        role: user.role,
+      },
+      process.env.JWT_SECRET,
+      { expiresIn: '25h' } // token 有效期可調整
+    );
+
     res.status(200).json({
       message: '登入成功',
+      token,
       user: {
         user_id: user.user_id,
         username: user.username,
