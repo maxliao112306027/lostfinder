@@ -55,6 +55,16 @@
       background-color: #a70b65;
     }
 
+    /* 額外新增：註冊按鈕的分隔樣式 */
+    button + button {
+      margin-top: 10px;
+      background-color: #999;
+    }
+
+    button + button:hover {
+      background-color: #777;
+    }
+
     .footer {
       margin-top: 30px;
       font-size: 14px;
@@ -75,6 +85,7 @@
     <input type="text" id="username" placeholder="帳號 Account" required />
     <input type="password" id="password" placeholder="密碼 Password" required />
     <button type="submit">登入 / Login</button>
+    <button type="button" onclick="window.location.href='register.html'">註冊 / Register</button>
     <p id="message"></p>
   </form>
 
