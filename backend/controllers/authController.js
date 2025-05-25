@@ -2,7 +2,7 @@ import * as authService from '../services/authService.js';
 
 // ✅ 註冊
 export const register = async (req, res) => {
-  const { username, password, email, phone, role = 'lost_user' } = req.body;
+  const { username, password, email, phone } = req.body;
 
   // 密碼格式驗證（至少8碼、含英文字母與數字）
   const passwordValid =
@@ -22,8 +22,7 @@ export const register = async (req, res) => {
       username,
       password,
       email,
-      phone,
-      role,
+      phone
     });
     res.status(201).json({ message: '註冊成功', user: result });
   } catch (err) {
@@ -38,14 +37,15 @@ export const register = async (req, res) => {
 // ✅ 登入
 export const login = async (req, res) => {
   const { username, password } = req.body;
+  console.log('🛂 收到登入請求：', { username });
 
-  // 基本輸入檢查
   if (!username || !password) {
     return res.status(400).json({ message: '請輸入帳號與密碼' });
   }
 
   try {
     const user = await authService.loginUser(username, password);
+
     res.status(200).json({
       message: '登入成功',
       user: {
