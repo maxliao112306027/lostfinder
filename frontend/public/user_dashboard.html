@@ -47,7 +47,34 @@
 
 <div id="mainContent" class="container mt-3">
   <section id="search" class="active"><div id="lostItems">載入中...</div></section>
-  <section id="register">登記失物內容（未實作）</section>
+
+<section id="register"><h3>登記遺失物</h3>
+  <form id="lostItemForm" enctype="multipart/form-data">
+    <div class="mb-3">
+      <label for="item_name" class="form-label">物品名稱</label>
+      <input type="text" class="form-control" id="item_name" name="item_name" required>
+    </div>
+    <div class="mb-3">
+      <label for="description" class="form-label">物品描述</label>
+      <textarea class="form-control" id="description" name="description" rows="3"></textarea>
+    </div>
+    <div class="mb-3">
+      <label for="lost_location" class="form-label">遺失地點</label>
+      <input type="text" class="form-control" id="lost_location" name="lost_location">
+    </div>
+    <div class="mb-3">
+      <label for="lost_date" class="form-label">遺失日期</label>
+      <input type="datetime-local" class="form-control" id="lost_date" name="lost_date">
+    </div>
+    <div class="mb-3">
+      <label for="image" class="form-label">上傳圖片</label>
+      <input type="file" class="form-control" id="image" name="image" accept="image/*">
+    </div>
+    <button type="submit" class="btn btn-primary">提交登記</button>
+  </form>
+  <div id="registerResult" class="mt-3"></div>
+</section>
+
   <section id="claims"><h3>我的認領申請</h3><div id="myClaims">載入中...</div></section>
   <section id="history"><h3>我的失物登記紀錄</h3><div id="myHistory">載入中...</div></section>
   <section id="announcement"><h3>最新公告</h3><div id="announcementList">載入中...</div></section>
@@ -174,6 +201,44 @@
       container.innerHTML = '❌ 載入失敗';
     }
   }
+
+  // 表單提交處理（你完成後端 API 後再啟用）
+document.getElementById('lostItemForm').addEventListener('submit', async (e) => {
+  e.preventDefault();
+
+  const user = JSON.parse(localStorage.getItem('user'));
+  const token = localStorage.getItem('token'); // ⬅️ 從 localStorage 取出 JWT token
+
+  if (!token) {
+    document.getElementById('registerResult').textContent = '❌ 未提供 token，請重新登入';
+    return;
+  }
+
+  console.log('🚀 傳送的 JWT token:', token);
+
+  const formData = new FormData(e.target);
+  
+  try {
+    const res = await fetch('/api/lostitems', {
+      method: 'POST',
+      headers: {
+        'Authorization': `Bearer ${token}` // ✅ 加上 JWT token
+      },
+      body: formData
+    });
+
+    const result = await res.json();
+    document.getElementById('registerResult').textContent =
+      result.message || '✅ 登記成功';
+    e.target.reset(); // 清空表單
+  } catch (err) {
+    console.error(err);
+    document.getElementById('registerResult').textContent = '❌ 發生錯誤，請稍後再試';
+  }
+});
+
+  
+
 </script>
 
 </body>
