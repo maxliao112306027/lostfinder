@@ -45,7 +45,21 @@
   </section>
 
   <section id="location"><h2>存放地點管理</h2></section>
-  <section id="claim"><h2>認領申請管理</h2></section>
+  <section id="claim">
+    <h2>認領申請管理</h2>
+     <table>
+      <thead>
+        <tr>
+          <th>物品名稱</th>
+          <th>申請人</th>
+          <th>理由</th>
+          <th>申請時間</th>
+          <th>操作</th>
+        </tr>
+      </thead>
+      <tbody id="claimTableBody"></tbody>
+    </table>
+  </section>
   <section id="destroy"><h2>物品轉贈 / 銷毀</h2></section>
   <section id="announcement"><h2>公告管理</h2></section>
   <section id="report"><h2>檢舉案件管理</h2></section>
@@ -60,6 +74,7 @@
       e.target.classList.add('active');
 
       if (id === 'item') loadItems();
+      if (id === 'claim') loadClaimRequests();
     }
 
     async function loadItems() {
@@ -139,6 +154,67 @@
         loadItems(); // 預設載入
       }
     };
+
+    async function loadClaimRequests() {
+  const tbody = document.getElementById('claimTableBody');
+  tbody.innerHTML = '';
+  try {
+    const res = await fetch('/api/claim_requests/pending');
+    const requests = await res.json();
+
+    requests.forEach(req => {
+      const tr = document.createElement('tr');
+      tr.innerHTML = `
+        <td>${req.item_name}</td>
+        <td>${req.username}</td>
+        <td>${req.reason || '（未提供）'}</td>
+        <td>${new Date(req.request_date).toLocaleString()}</td>
+        <td>
+          <button onclick="approveClaim(${req.request_id})">✅</button>
+          <button onclick="denyClaim(${req.request_id})">❌</button>
+        </td>
+      `;
+      tbody.appendChild(tr);
+    });
+  } catch (err) {
+    console.error('❌ 載入認領申請失敗：', err);
+  }
+}
+
+async function approveClaim(requestId) {
+  const user = JSON.parse(localStorage.getItem('user'));
+  try {
+    const res = await fetch(`/api/claim_requests/${requestId}/approve`, {
+      method: 'PATCH',
+      headers: { 'Content-Type': 'application/json' },
+      body: JSON.stringify({ admin_id: user.user_id }) // ✅ 傳 admin_id
+    });
+    const result = await res.json();
+    alert(result.message || '✅ 已通過申請');
+    loadClaimRequests();
+  } catch (err) {
+    console.error('❌ 通過申請失敗：', err);
+  }
+}
+
+
+async function denyClaim(requestId) {
+  const user = JSON.parse(localStorage.getItem('user'));
+  try {
+    const res = await fetch(`/api/claim_requests/${requestId}/deny`, {
+      method: 'PATCH',
+      headers: { 'Content-Type': 'application/json' },
+      body: JSON.stringify({ admin_id: user.user_id }) // ✅ 傳 admin_id
+    });
+    const result = await res.json();
+    alert(result.message || '❌ 已拒絕申請');
+    loadClaimRequests();
+  } catch (err) {
+    console.error('❌ 拒絕申請失敗：', err);
+  }
+}
+
+
   </script>
 </body>
 </html>
