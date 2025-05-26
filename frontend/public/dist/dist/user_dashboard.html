@@ -48,35 +48,32 @@
 
 <div id="mainContent" class="container mt-3">
   <section id="search" class="active"><div id="lostItems">載入中...</div></section>
-
-
-<section id="register"><h3>登記遺失物</h3>
-  <form id="lostItemForm" enctype="multipart/form-data">
-    <div class="mb-3">
-      <label for="item_name" class="form-label">物品名稱</label>
-      <input type="text" class="form-control" id="item_name" name="item_name" required>
-    </div>
-    <div class="mb-3">
-      <label for="description" class="form-label">物品描述</label>
-      <textarea class="form-control" id="description" name="description" rows="3"></textarea>
-    </div>
-    <div class="mb-3">
-      <label for="lost_location" class="form-label">遺失地點</label>
-      <input type="text" class="form-control" id="lost_location" name="lost_location">
-    </div>
-    <div class="mb-3">
-      <label for="lost_date" class="form-label">遺失日期</label>
-      <input type="datetime-local" class="form-control" id="lost_date" name="lost_date">
-    </div>
-    <div class="mb-3">
-      <label for="image" class="form-label">上傳圖片</label>
-      <input type="file" class="form-control" id="image" name="image" accept="image/*">
-    </div>
-    <button type="submit" class="btn btn-primary">提交登記</button>
-  </form>
-  <div id="registerResult" class="mt-3"></div>
-</section>
-
+  <section id="register">
+    <h3>登記遺失物</h3>
+    <form id="lostForm" class="row g-3">
+      <div class="col-md-6">
+        <label for="item_name" class="form-label">物品名稱</label>
+        <input type="text" class="form-control" id="item_name" required>
+      </div>
+      <div class="col-md-6">
+        <label for="lost_location" class="form-label">遺失地點</label>
+        <input type="text" class="form-control" id="lost_location">
+      </div>
+      <div class="col-md-6">
+        <label for="lost_date" class="form-label">遺失日期</label>
+        <input type="date" class="form-control" id="lost_date" required>
+      </div>
+      <div class="col-md-12">
+        <label for="description" class="form-label">描述</label>
+        <textarea class="form-control" id="description" rows="3"></textarea>
+      </div>
+      <div class="col-12">
+        <button type="submit" class="btn btn-primary">送出</button>
+      </div>
+    </form>
+    <div id="registerResult" class="mt-3"></div>
+  </section>
+  
   <section id="claims"><h3>我的認領申請</h3><div id="myClaims">載入中...</div></section>
   <section id="history"><h3>我的失物登記紀錄</h3><div id="myHistory">載入中...</div></section>
   <section id="announcement"><h3>最新公告</h3><div id="announcementList">載入中...</div></section>
@@ -95,7 +92,7 @@
     if (id === 'history') loadMyHistory();
     if (id === 'comment') loadMyMessages();
   }
-  
+
   function logout() {
     localStorage.removeItem('user');
     window.location.href = '/login.html';
@@ -117,8 +114,8 @@
       container.innerHTML = data.map(item => `
   <div class="card mb-3">
     <div class="card-body">
-      <h5 class="card-title">${item.item_name || '未命名'}</h5>
-        <p class="card-text">遺失地點：${item.lost_location || '未知'}</p>
+      <h5 class="card-title">${item.name || '未命名'}</h5>
+        <p class="card-text">遺失地點：${item.location || '未知'}</p>
         <p class="card-text">描述：${item.description || '無'}</p>
         <small class="text-muted">${
         item.lost_date && !isNaN(Date.parse(item.lost_date))
@@ -193,7 +190,7 @@
       const data = await res.json();
       container.innerHTML = data.map(h => `
         <div class="border-bottom py-2">
-          ${h.item_name}（狀態：${h.status}） - ${
+          ${h.item_name}（狀態：${h.status}) - ${
             h.created_at && !isNaN(Date.parse(h.created_at))
               ? new Date(h.created_at).toLocaleDateString()
               : '未知日期'
@@ -224,143 +221,142 @@
       container.innerHTML = '❌ 載入失敗';
     }
   }
-// ✅ 登記遺失物（主表單）
-document.getElementById('lostItemForm').addEventListener('submit', async (e) => {
-  e.preventDefault();
-
-  const user = JSON.parse(localStorage.getItem('user'));
-  const token = localStorage.getItem('token');
-
-  if (!token) {
-    document.getElementById('registerResult').textContent = '❌ 未提供 token，請重新登入';
-    return;
-  }
-
-  console.log('🚀 傳送的 JWT token:', token);
-
-  const formData = new FormData(e.target);
-
-  try {
-    const res = await fetch('/api/lostitems', {
-      method: 'POST',
-      headers: {
-        'Authorization': `Bearer ${token}`
-      },
-      body: formData
-    });
-
-    const result = await res.json();
-    document.getElementById('registerResult').textContent =
-      result.message || '✅ 登記成功';
-    e.target.reset();
-  } catch (err) {
-    console.error(err);
-    document.getElementById('registerResult').textContent = '❌ 發生錯誤，請稍後再試';
-  }
-});
-
-
-// ✅ 搜尋功能（searchForm）
-document.getElementById('searchForm').addEventListener('submit', async (e) => {
-  e.preventDefault(); // 防止表單跳轉
-  const keyword = document.getElementById('searchInput').value.trim().toLowerCase();
-  if (!keyword) {
-    loadLostItems(); // 如果沒輸入，載入全部
-    return;
-  }
-
-  try {
-    const res = await fetch('/api/items');
-    const data = await res.json();
-
-    const filtered = data.filter(item =>
-      (item.item_name && item.item_name.toLowerCase().includes(keyword)) ||
-      (item.description && item.description.toLowerCase().includes(keyword)) ||
-      (item.lost_location && item.lost_location.toLowerCase().includes(keyword))
-    );
-
-
-    const container = document.getElementById('lostItems');
-    if (filtered.length === 0) {
-      container.innerHTML = '<div class="text-muted">找不到相關遺失物。</div>';
-    } else {
-      container.innerHTML = filtered.map(item => `
-        <div class="card mb-3">
-          <div class="card-body">
-            <h5 class="card-title">${item.item_name || '未命名'}</h5>
-            <p class="card-text">地點：${item.lost_location || '未知'}</p>
-            <p class="card-text">描述：${item.description || '無'}</p>
-            <small class="text-muted">
-              ${
-                item.lost_date && !isNaN(Date.parse(item.lost_date))
-                  ? new Date(item.lost_date).toLocaleDateString()
-                  : '未知日期'
-              }
-            </small>
-            <button class="btn btn-outline-primary btn-sm" onclick="claimItem(${item.id})">我要認領</button>
-          </div>
+  document.getElementById('lostForm').addEventListener('submit', async (e) => {
+    e.preventDefault();
+  
+    const user = JSON.parse(localStorage.getItem('user'));
+    if (!user) return logout();
+  
+    const form = document.getElementById('lostForm');
+    const formData = new FormData(); // 手動 append 每個欄位
+  
+    formData.append("name", document.getElementById("item_name").value);
+    formData.append("description", document.getElementById("description").value);
+    formData.append("location", document.getElementById("lost_location").value);
+    formData.append("lost_date", document.getElementById("lost_date").value);
+  
+    try {
+      const response = await fetch('/lostitems', {
+        method: 'POST',
+        body: formData
+      });
+  
+      const text = await response.text();
+      console.log('後端回傳內容：', text);
+  
+      if (!response.ok) throw new Error('送出失敗');
+  
+      let result = {};
+      try {
+        result = JSON.parse(text);
+      } catch {}
+  
+      // ✅ 顯示成功訊息
+      document.getElementById('registerResult').innerHTML =
+        `<div class="alert alert-success">✅ ${result.message || '登記成功！'}</div>`;
+  
+      // ✅ 清空表單
+      form.reset();
+  
+    } catch (err) {
+      console.error('送出錯誤：', err);
+      document.getElementById('registerResult').innerHTML =
+        '<div class="alert alert-danger">❌ 發生錯誤，請稍後再試。</div>';
+    }
+  });
+  async function loadMyClaims() {
+    const user = JSON.parse(localStorage.getItem('user'));
+    const container = document.getElementById('myClaims');
+    container.innerHTML = '載入中...';
+    try {
+      const res = await fetch(`/api/my-claims?user_id=${user.user_id}`);
+      const data = await res.json();
+      container.innerHTML = data.map(claim => `
+        <div class="border p-3 mb-2">
+          <strong>物品：</strong>${claim.item_name}<br>
+          <strong>理由：</strong>${claim.reason}<br>
+          <span class="badge bg-${claim.status === 'approved' ? 'success' : claim.status === 'rejected' ? 'danger' : 'secondary'}">
+            ${claim.status}
+          </span>
         </div>
       `).join('');
+    } catch (err) {
+      console.error(err);
+      container.innerHTML = '❌ 無法載入認領記錄';
     }
-  } catch (err) {
-    console.error(err);
-    document.getElementById('lostItems').innerHTML = '❌ 搜尋失敗';
   }
-});
-
-
-// ✅ 認領功能
-async function claimItem(itemId) {
-  const user = JSON.parse(localStorage.getItem('user'));
-  if (!user) return logout();
-
-  const reason = prompt("請輸入認領理由（可空白）：");
-
-  try {
-    const res = await fetch('/api/claims', {
-      method: 'POST',
-      headers: { 'Content-Type': 'application/json' },
-      body: JSON.stringify({
-        item_id: itemId,
-        user_id: user.user_id,
-        reason: reason || ''
-      })
-    });
-
-    const result = await res.json();
-    if (!res.ok) throw new Error(result.error || '提交失敗');
-
-    alert("✅ 認領申請已送出！");
-    loadMyClaims(); // 重新整理「我的認領」
-  } catch (err) {
-    console.error('❌ 認領錯誤:', err);
-    alert("❌ 認領失敗，請稍後再試。");
+  document.getElementById('searchForm').addEventListener('submit', async (e) => {
+    e.preventDefault(); // 防止表單跳轉
+    const keyword = document.getElementById('searchInput').value.trim().toLowerCase();
+    if (!keyword) {
+      loadLostItems(); // 如果沒輸入，載入全部
+      return;
+    }
+  
+    try {
+      const res = await fetch('/api/items');
+      const data = await res.json();
+  
+      const filtered = data.filter(item =>
+        (item.name && item.name.toLowerCase().includes(keyword)) ||
+        (item.description && item.description.toLowerCase().includes(keyword)) ||
+        (item.location && item.location.toLowerCase().includes(keyword))
+      );
+  
+      const container = document.getElementById('lostItems');
+      if (filtered.length === 0) {
+        container.innerHTML = '<div class="text-muted">找不到相關遺失物。</div>';
+      } else {
+        container.innerHTML = filtered.map(item => `
+          <div class="card mb-3">
+            <div class="card-body">
+              <h5 class="card-title">${item.name || '未命名'}</h5>
+              <p class="card-text">地點：${item.location || '未知'}</p>
+              <p class="card-text">描述：${item.description || '無'}</p>
+              <small class="text-muted">
+                ${
+                  item.lost_date && !isNaN(Date.parse(item.lost_date))
+                    ? new Date(item.lost_date).toLocaleDateString()
+                    : '未知日期'
+                }
+              </small>
+            </div>
+          </div>
+        `).join('');
+      }
+    } catch (err) {
+      console.error(err);
+      document.getElementById('lostItems').innerHTML = '❌ 搜尋失敗';
+    }
+  });
+  async function claimItem(itemId) {
+    const user = JSON.parse(localStorage.getItem('user'));
+    if (!user) return logout();
+  
+    const reason = prompt("請輸入認領理由（可空白）：");
+  
+    try {
+      const res = await fetch('/api/claims', {
+        method: 'POST',
+        headers: { 'Content-Type': 'application/json' },
+        body: JSON.stringify({
+          item_id: itemId,
+          user_id: user.user_id,
+          reason: reason || ''
+        })
+      });
+  
+      const result = await res.json();
+      if (!res.ok) throw new Error(result.error || '提交失敗');
+  
+      alert("✅ 認領申請已送出！");
+      loadMyClaims(); // 重新整理「我的認領」
+    } catch (err) {
+      console.error('❌ 認領錯誤:', err);
+      alert("❌ 認領失敗，請稍後再試。");
+    }
   }
-}
-
-
-// ✅ 認領紀錄顯示
-async function loadMyClaims() {
-  const user = JSON.parse(localStorage.getItem('user'));
-  const container = document.getElementById('myClaims');
-  container.innerHTML = '載入中...';
-  try {
-    const res = await fetch(`/api/my-claims?user_id=${user.user_id}`);
-    const data = await res.json();
-    container.innerHTML = data.map(claim => `
-      <div class="border p-3 mb-2">
-        <strong>物品：</strong>${claim.item_name}<br>
-        <strong>理由：</strong>${claim.reason}<br>
-        <span class="badge bg-${claim.status === 'approved' ? 'success' : claim.status === 'rejected' ? 'danger' : 'secondary'}">
-          ${claim.status}
-        </span>
-      </div>
-    `).join('');
-  } catch (err) {
-    console.error(err);
-    container.innerHTML = '❌ 無法載入認領記錄';
-  }
-}
+  
 </script>
 
 </body>
