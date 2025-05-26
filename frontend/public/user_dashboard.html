@@ -274,10 +274,11 @@ document.getElementById('searchForm').addEventListener('submit', async (e) => {
     const data = await res.json();
 
     const filtered = data.filter(item =>
-      (item.name && item.name.toLowerCase().includes(keyword)) ||
+      (item.item_name && item.item_name.toLowerCase().includes(keyword)) ||
       (item.description && item.description.toLowerCase().includes(keyword)) ||
-      (item.location && item.location.toLowerCase().includes(keyword))
+      (item.lost_location && item.lost_location.toLowerCase().includes(keyword))
     );
+
 
     const container = document.getElementById('lostItems');
     if (filtered.length === 0) {
@@ -286,8 +287,8 @@ document.getElementById('searchForm').addEventListener('submit', async (e) => {
       container.innerHTML = filtered.map(item => `
         <div class="card mb-3">
           <div class="card-body">
-            <h5 class="card-title">${item.name || '未命名'}</h5>
-            <p class="card-text">地點：${item.location || '未知'}</p>
+            <h5 class="card-title">${item.item_name || '未命名'}</h5>
+            <p class="card-text">地點：${item.lost_location || '未知'}</p>
             <p class="card-text">描述：${item.description || '無'}</p>
             <small class="text-muted">
               ${

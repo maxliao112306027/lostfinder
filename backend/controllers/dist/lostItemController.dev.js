@@ -65,7 +65,7 @@ var getAllLostItems = function getAllLostItems(req, res) {
         case 0:
           _context2.prev = 0;
           _context2.next = 3;
-          return regeneratorRuntime.awrap(_db["default"].query('SELECT * FROM lost_items ORDER BY created_at DESC'));
+          return regeneratorRuntime.awrap(_db["default"].query('SELECT * FROM items ORDER BY lost_date DESC'));
 
         case 3:
           _ref = _context2.sent;

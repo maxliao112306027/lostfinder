@@ -44,7 +44,7 @@ export const registerLostItem = async (req, res) => {
 // ✅ 查詢所有遺失物：GET /api/lostitems
 export const getAllLostItems = async (req, res) => {
   try {
-    const [rows] = await db.query('SELECT * FROM items ORDER BY created_at DESC');
+    const [rows] = await db.query('SELECT * FROM items ORDER BY lost_date DESC');
     res.status(200).json(rows);
   } catch (err) {
     console.error('❌ DB Select Error:', err);
