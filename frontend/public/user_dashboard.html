@@ -125,7 +125,7 @@
         ? new Date(item.lost_date).toLocaleDateString()
         : '未知日期'
         }</small>
-        <button class="btn btn-outline-primary btn-sm" onclick="claimItem(${item.id})">我要認領</button>
+        <button class="btn btn-outline-primary btn-sm" onclick="claimItem(${item.item_id})">我要認領</button>
 
         </div>
      </div>
@@ -316,25 +316,34 @@ async function claimItem(itemId) {
   const reason = prompt("請輸入認領理由（可空白）：");
 
   try {
-    const res = await fetch('/api/claims', {
-      method: 'POST',
-      headers: { 'Content-Type': 'application/json' },
-      body: JSON.stringify({
-        item_id: itemId,
-        user_id: user.user_id,
-        reason: reason || ''
-      })
+  const payload = {
+    item_id: itemId,
+    user_id: user.user_id,
+    reason: reason || ''
+  };
+
+  console.log("📦 傳送認領申請資料：", payload);
+
+  const res = await fetch('/api/claims', {
+    method: 'POST',
+    headers: {
+      'Content-Type': 'application/json'
+    },
+    body: JSON.stringify(payload)
     });
 
-    const result = await res.json();
-    if (!res.ok) throw new Error(result.error || '提交失敗');
+  const result = await res.json();
 
-    alert("✅ 認領申請已送出！");
-    loadMyClaims(); // 重新整理「我的認領」
-  } catch (err) {
-    console.error('❌ 認領錯誤:', err);
-    alert("❌ 認領失敗，請稍後再試。");
-  }
+  if (!res.ok) throw new Error(result.error || '提交失敗');
+
+  alert("✅ 認領申請已送出！\n系統已自動切換到『📬 我的認領』");
+  showSection('claims');
+  loadMyClaims();
+} catch (err) {
+  console.error('❌ 認領錯誤:', err);
+  alert("❌ 認領失敗，請稍後再試。");
+}
+
 }
 
 
