@@ -21,6 +21,54 @@ const PORT = process.env.PORT || 3000;
 app.use(cors());
 app.use(express.json());
 
+
+app.get('/api/items', async (req, res) => {
+  try {
+    const [rows] = await pool.query('SELECT * FROM lost_items ORDER BY lost_date DESC');
+    res.json(rows);
+  } catch (err) {
+    console.error('❌ 查詢失物清單失敗:', err);
+    res.status(500).json({ error: '伺服器錯誤' });
+  }
+});
+
+app.get('/api/my-claims', async (req, res) => {
+  const { user_id } = req.query;
+  if (!user_id) return res.status(400).json({ error: '缺少 user_id' });
+
+  try {
+    const [rows] = await pool.query(`
+      SELECT c.*, i.name AS item_name
+      FROM claim_request c
+      JOIN lost_items i ON c.item_id = i.id
+      WHERE c.user_id = ?
+    `, [user_id]);
+
+    res.json(rows);
+  } catch (err) {
+    console.error('❌ 查詢認領紀錄失敗:', err);
+    res.status(500).json({ error: '伺服器錯誤' });
+  }
+});
+app.post('/api/claims', async (req, res) => {
+  const { item_id, user_id, reason } = req.body;
+  if (!item_id || !user_id) {
+    return res.status(400).json({ error: '缺少必要欄位' });
+  }
+
+  try {
+    await pool.query(`
+      INSERT INTO claim_request (item_id, user_id, reason, status)
+      VALUES (?, ?, ?, 'pending')
+    `, [item_id, user_id, reason || '']);
+
+    res.json({ message: '認領申請已提交' });
+  } catch (err) {
+    console.error('❌ 認領錯誤:', err);
+    res.status(500).json({ error: '伺服器錯誤' });
+  }
+});
+
 // ✅ API 路由（掛在 /api）
 app.use('/api', authRoutes);
 app.use('/api', lostItemRoutes); // 若你想讓 /items 這種路徑直接出現，可以保留這樣設計
