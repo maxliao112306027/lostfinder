@@ -2,25 +2,26 @@ import db from '../config/db.js';
 
 // ✅ 新增遺失物：POST /api/lostitems
 export const registerLostItem = async (req, res) => {
-  const { item_name, description, lost_location, lost_date } = req.body;
+  const { item_name, description, lost_location, lost_date, storage_location_id } = req.body;
   const image = req.file?.filename || null; // ✅ multer 上傳後的圖片檔名
   const user_id = req.user.user_id;         // ✅ JWT 驗證後解析出的使用者 ID
 
-  try {
-    // ✅ Step 1：插入 item 主資料（符合 ERD 中的 items 表）
+ try {
+    // ✅ Step 1：插入 item 表（新增 storage_location_id 欄位）
     const insertItemSQL = `
-      INSERT INTO items (item_name, description, lost_location, lost_date, user_id)
-      VALUES (?, ?, ?, ?, ?)
+      INSERT INTO items (item_name, description, lost_location, lost_date, storage_location_id, user_id)
+      VALUES (?, ?, ?, ?, ?, ?)
     `;
     const [itemResult] = await db.query(insertItemSQL, [
       item_name,
       description,
       lost_location,
       lost_date,
+      storage_location_id,
       user_id
     ]);
-
     const item_id = itemResult.insertId;
+
 
     // ✅ Step 2：若有圖片，插入 image 表
     if (image) {
@@ -51,3 +52,5 @@ export const getAllLostItems = async (req, res) => {
     res.status(500).json({ message: '查詢失敗', error: err });
   }
 };
+
+

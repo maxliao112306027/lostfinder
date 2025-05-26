@@ -30,6 +30,7 @@
     <button onclick="showSection('announcement', event)">📢 公告</button>
     <button onclick="showSection('report', event)">🚨 檢舉管理</button>
     <button onclick="showSection('trend', event)">📊 統計分析</button>
+    <button onclick="logout()">🚪 登出</button>
   </nav>
 
   <section id="item" class="active">
@@ -154,6 +155,14 @@
         loadItems(); // 預設載入
       }
     };
+
+    // ✅ 新增 logout 函數
+    function logout() {
+      localStorage.removeItem('user');
+      localStorage.removeItem('token');
+      alert('您已登出');
+      window.location.href = '/login.html';
+    }
 
     async function loadClaimRequests() {
   const tbody = document.getElementById('claimTableBody');

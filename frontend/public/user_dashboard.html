@@ -69,6 +69,13 @@
       <input type="datetime-local" class="form-control" id="lost_date" name="lost_date">
     </div>
     <div class="mb-3">
+      <label for="storage_location_id" class="form-label">選擇存放地點</label>
+      <select class="form-select" id="storage_location_id" name="storage_location_id" required>
+        <option value="">請選擇地點</option>
+        <!-- 選項將由 JS 動態載入 -->
+      </select>
+    </div>
+    <div class="mb-3">
       <label for="image" class="form-label">上傳圖片</label>
       <input type="file" class="form-control" id="image" name="image" accept="image/*">
     </div>
@@ -101,12 +108,13 @@
     window.location.href = '/login.html';
   }
 
-  window.onload = () => {
-    const user = JSON.parse(localStorage.getItem('user'));
-    if (!user) return logout();
-    document.getElementById('username-display').textContent = '使用者：' + user.username;
-    loadLostItems();
-  };
+    window.onload = () => {
+      const user = JSON.parse(localStorage.getItem('user'));
+      if (!user) return logout();
+      document.getElementById('username-display').textContent = '使用者：' + user.username;
+      loadLostItems();
+      loadStorageLocations();
+    };
 
   async function loadLostItems() {
     const container = document.getElementById('lostItems');
@@ -133,6 +141,23 @@
       container.innerHTML = '❌ 載入失敗';
     }
   }
+
+  async function loadStorageLocations() {
+  try {
+    const res = await fetch('/api/storage-locations');
+    const data = await res.json();
+    const select = document.getElementById('storage_location_id');
+    data.forEach(loc => {
+      const option = document.createElement('option');
+      option.value = loc.storage_location_id;
+      option.textContent = loc.location_name;
+      select.appendChild(option);
+    });
+  } catch (err) {
+    console.error('❌ 無法載入地點清單:', err);
+  }
+}
+
 
   async function loadAnnouncements() {
     const container = document.getElementById('announcementList');
@@ -256,6 +281,35 @@
       document.getElementById('lostItems').innerHTML = '❌ 搜尋失敗';
     }
   });
+
+  document.getElementById('lostItemForm').addEventListener('submit', async (e) => {
+  e.preventDefault();
+  const form = document.getElementById('lostItemForm');
+  const formData = new FormData(form);
+  const user = JSON.parse(localStorage.getItem('user')); // ⬅️ 從 localStorage 拿 token
+
+  try {
+    const res = await fetch('/api/lostitems', {
+      method: 'POST',
+      headers: {
+        'Authorization': 'Bearer ' + user.token // ⬅️ 帶上 JWT token
+      },
+      body: formData
+    });
+
+    const result = await res.json();
+    if (!res.ok) throw new Error(result.error || '提交失敗');
+
+    document.getElementById('registerResult').innerHTML = `<div class="alert alert-success">✅ 登記成功！</div>`;
+    form.reset();
+    loadLostItems();
+  } catch (err) {
+    console.error('❌ 登記錯誤:', err);
+    document.getElementById('registerResult').innerHTML = `<div class="alert alert-danger">❌ 登記失敗：${err.message}</div>`;
+  }
+});
+
+
 
 
 // ✅ 認領功能
