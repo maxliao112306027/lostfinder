@@ -9,7 +9,8 @@ import pool from './config/db.js';
 import authRoutes from './routes/auth.js';
 import lostItemRoutes from './routes/lostItem.js';
 import claimRoutes from './routes/claimRoutes.js';
-
+import storageLocationRoutes from './routes/storageLocationRoutes.js';
+import adminItemRoutes from './routes/adminItemRoutes.js';
 
 dotenv.config();
 
@@ -25,6 +26,8 @@ app.use(express.json());
 app.use('/uploads', express.static('backend/uploads'));
 app.use('/api/claim_requests', claimRoutes);
 app.use('/api', lostItemRoutes);
+app.use('/api', storageLocationRoutes);
+app.use('/api/admin/items', adminItemRoutes);
 
 app.get('/api/items', async (req, res) => {
   try {
