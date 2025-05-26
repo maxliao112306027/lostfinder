@@ -11,6 +11,7 @@ import lostItemRoutes from './routes/lostItem.js';
 import claimRoutes from './routes/claimRoutes.js';
 import storageLocationRoutes from './routes/storageLocationRoutes.js';
 import adminItemRoutes from './routes/adminItemRoutes.js';
+import reportRoutes from './routes/report.js';
 
 dotenv.config();
 
@@ -28,6 +29,8 @@ app.use('/api/claim_requests', claimRoutes);
 app.use('/api', lostItemRoutes);
 app.use('/api', storageLocationRoutes);
 app.use('/api/admin/items', adminItemRoutes);
+app.use('/api/reports', reportRoutes);
+
 
 app.get('/api/items', async (req, res) => {
   try {

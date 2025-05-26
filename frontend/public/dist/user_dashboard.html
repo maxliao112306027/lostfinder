@@ -125,8 +125,8 @@
         ? new Date(item.lost_date).toLocaleDateString()
         : '未知日期'
         }</small>
-        <button class="btn btn-outline-primary btn-sm" onclick="claimItem(${item.id})">我要認領</button>
-
+        <button class="btn btn-outline-primary btn-sm" onclick="claimItem(${item.item_id})">我要認領</button>
+        <button class="btn btn-sm btn-danger" onclick="reportItem(${item.item_id})">檢舉</button>
         </div>
      </div>
 `).join('');
@@ -297,7 +297,9 @@ document.getElementById('searchForm').addEventListener('submit', async (e) => {
                   : '未知日期'
               }
             </small>
-            <button class="btn btn-outline-primary btn-sm" onclick="claimItem(${item.id})">我要認領</button>
+            <button class="btn btn-outline-primary btn-sm" onclick="claimItem(${item.item_id})">我要認領</button>
+            <button onclick="reportItem(${item.item_id})" class="btn btn-sm btn-danger">檢舉</button>
+
           </div>
         </div>
       `).join('');
@@ -361,6 +363,31 @@ async function loadMyClaims() {
     container.innerHTML = '❌ 無法載入認領記錄';
   }
 }
+
+async function reportItem(itemId) {
+  const reason = prompt("請輸入檢舉原因（如：虛假內容、損壞物品）");
+  if (!reason) return;
+
+  const user = JSON.parse(localStorage.getItem('user'));
+
+  try {
+    const res = await fetch('/api/report', {
+      method: 'POST',
+      headers: {
+        'Content-Type': 'application/json',
+        Authorization: `Bearer ${user.token}`
+      },
+      body: JSON.stringify({ item_id: itemId, reason })
+    });
+
+    const result = await res.json();
+    alert(result.message || '檢舉已提交');
+  } catch (err) {
+    console.error('❌ 檢舉失敗', err);
+    alert('❌ 提交失敗，請稍後再試');
+  }
+}
+
 </script>
 
 </body>
