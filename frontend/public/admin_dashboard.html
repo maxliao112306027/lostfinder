@@ -72,7 +72,20 @@
   </section>
   <section id="destroy"><h2>物品轉贈 / 銷毀</h2></section>
   <section id="announcement"><h2>公告管理</h2></section>
-  <section id="report"><h2>檢舉案件管理</h2></section>
+  <section id="report">
+    <h2>檢舉案件管理</h2>
+    <table>
+      <thead>
+        <tr>
+          <th>檢舉人</th>
+          <th>物品</th>
+          <th>原因</th>
+          <th>操作</th>
+        </tr>
+      </thead>
+      <tbody id="reportTableBody"></tbody>
+    </table>
+  </section>
   <section id="trend"><h2>遺失紀錄統計</h2></section>
 
   <script>
@@ -86,6 +99,8 @@
       if (id === 'item') loadItems();
       if (id === 'claim') loadClaimRequests();
       if (id === 'location') loadLocations();
+      if (id === 'report') loadReports();
+
     }
 
     let allLocations = [];
@@ -311,6 +326,72 @@ async function loadLocations() {
   }
 
   if (location.hash.includes('location')) loadLocations();
+
+  async function loadReports() {
+  const tbody = document.getElementById('reportTableBody');
+  tbody.innerHTML = '';
+  try {
+    const res = await fetch('/api/reports/pending', {
+      headers: {
+        Authorization: `Bearer ${JSON.parse(localStorage.getItem('user')).token}`
+      }
+    });
+    const reports = await res.json();
+
+    reports.forEach(r => {
+      const tr = document.createElement('tr');
+      tr.innerHTML = `
+        <td>${r.username}</td>
+        <td>${r.item_name}</td>
+        <td>${r.reason}</td>
+        <td>
+          <button onclick="approveReport(${r.report_id})">✅</button>
+          <button onclick="denyReport(${r.report_id})">❌</button>
+        </td>
+      `;
+      tbody.appendChild(tr);
+    });
+  } catch (err) {
+    console.error('❌ 載入檢舉失敗：', err);
+  }
+}
+
+async function approveReport(reportId) {
+  const admin = JSON.parse(localStorage.getItem('user'));
+  try {
+    const res = await fetch(`/api/reports/${reportId}/approve`, {
+      method: 'PATCH',
+      headers: {
+        'Content-Type': 'application/json'
+      },
+      body: JSON.stringify({ admin_id: admin.user_id })
+    });
+    const result = await res.json();
+    alert(result.message || '✅ 檢舉通過');
+    loadReports();
+  } catch (err) {
+    console.error('❌ 通過失敗：', err);
+  }
+}
+
+async function denyReport(reportId) {
+  const admin = JSON.parse(localStorage.getItem('user'));
+  try {
+    const res = await fetch(`/api/reports/${reportId}/deny`, {
+      method: 'PATCH',
+      headers: {
+        'Content-Type': 'application/json'
+      },
+      body: JSON.stringify({ admin_id: admin.user_id })
+    });
+    const result = await res.json();
+    alert(result.message || '❌ 檢舉駁回');
+    loadReports();
+  } catch (err) {
+    console.error('❌ 駁回失敗：', err);
+  }
+}
+
 
   </script>
 </body>
