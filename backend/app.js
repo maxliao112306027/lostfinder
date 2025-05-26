@@ -20,11 +20,13 @@ const PORT = process.env.PORT || 3000;
 // ✅ Middleware
 app.use(cors());
 app.use(express.json());
+app.use('/uploads', express.static('backend/uploads'));
+
 
 
 app.get('/api/items', async (req, res) => {
   try {
-    const [rows] = await pool.query('SELECT * FROM lost_items ORDER BY lost_date DESC');
+    const [rows] = await pool.query('SELECT * FROM items ORDER BY lost_date DESC');
     res.json(rows);
   } catch (err) {
     console.error('❌ 查詢失物清單失敗:', err);

@@ -117,8 +117,8 @@
       container.innerHTML = data.map(item => `
   <div class="card mb-3">
     <div class="card-body">
-      <h5 class="card-title">${item.name || '未命名'}</h5>
-        <p class="card-text">遺失地點：${item.location || '未知'}</p>
+      <h5 class="card-title">${item.item_name || '未命名'}</h5>
+        <p class="card-text">遺失地點：${item.lost_location || '未知'}</p>
         <p class="card-text">描述：${item.description || '無'}</p>
         <small class="text-muted">${
         item.lost_date && !isNaN(Date.parse(item.lost_date))
