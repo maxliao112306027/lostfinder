@@ -71,7 +71,7 @@ app.post('/api/claims', async (req, res) => {
 
 // ✅ API 路由（掛在 /api）
 app.use('/api', authRoutes);
-app.use(lostItemRoutes); // 若你想讓 /items 這種路徑直接出現，可以保留這樣設計
+app.use('/api', lostItemRoutes); // 若你想讓 /items 這種路徑直接出現，可以保留這樣設計
 
 // ✅ 提供 frontend/public 作為靜態檔案路徑
 app.use(express.static(path.join(__dirname, '../frontend/public')));
