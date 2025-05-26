@@ -24,7 +24,7 @@ app.use(cors());
 app.use(express.json());
 app.use('/uploads', express.static('backend/uploads'));
 app.use('/api/claim_requests', claimRoutes);
-
+app.use('/api', lostItemRoutes);
 
 app.get('/api/items', async (req, res) => {
   try {
