@@ -40,9 +40,9 @@ app.get('/api/my-claims', async (req, res) => {
 
   try {
     const [rows] = await pool.query(`
-      SELECT c.*, i.name AS item_name
+      SELECT c.*,item_name
       FROM claim_request c
-      JOIN lost_items i ON c.item_id = i.id
+      JOIN items i ON c.item_id = i.item_id
       WHERE c.user_id = ?
     `, [user_id]);
 
