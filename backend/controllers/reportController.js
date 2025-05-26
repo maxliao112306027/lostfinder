@@ -52,16 +52,7 @@ export const approveReport = async (req, res) => {
   const report_id = req.params.id;
 
   try {
-    // 先更新報告狀態
-    await db.query(`
-      UPDATE report
-      SET status = 'processed',
-          processed_by = ?,
-          admin_response = '✅ 檢舉成立'
-      WHERE report_id = ?
-    `, [admin_id, report_id]);
-
-    // 🔍 根據 report_id 查出被檢舉的物品登記者（item.user_id）
+    // 查出 item 的 user_id
     const [[itemRow]] = await db.query(`
       SELECT i.user_id
       FROM report r
@@ -71,7 +62,7 @@ export const approveReport = async (req, res) => {
 
     const offender_id = itemRow?.user_id;
 
-    // ✅ 對該使用者違規點數 +1
+    // 記違規點數 +1
     if (offender_id) {
       await db.query(`
         UPDATE user
@@ -80,12 +71,22 @@ export const approveReport = async (req, res) => {
       `, [offender_id]);
     }
 
-    res.json({ message: '✅ 檢舉已審核通過並記點' });
+    // 將檢舉標記為已處理
+    await db.query(`
+      UPDATE report
+      SET status = 'processed',
+          processed_by = ?,
+          admin_response = '✅ 檢舉成立'
+      WHERE report_id = ?
+    `, [admin_id, report_id]);
+
+    res.json({ message: '✅ 已審核並記點' });
   } catch (err) {
-    console.error('❌ 通過檢舉失敗:', err);
+    console.error('❌ 檢舉通過失敗:', err);
     res.status(500).json({ error: '無法審核檢舉' });
   }
 };
+
 
 
 
@@ -103,9 +104,11 @@ export const denyReport = async (req, res) => {
       WHERE report_id = ?
     `, [admin_id, report_id]);
 
-    res.json({ message: '❌ 檢舉已駁回' });
+    res.json({ message: '❌ 已駁回檢舉' });
   } catch (err) {
-    console.error('❌ 駁回檢舉失敗:', err);
+    console.error('❌ 檢舉駁回失敗:', err);
     res.status(500).json({ error: '無法駁回檢舉' });
   }
 };
+
+
