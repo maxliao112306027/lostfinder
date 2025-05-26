@@ -8,6 +8,8 @@ import { dirname } from 'path';
 import pool from './config/db.js';
 import authRoutes from './routes/auth.js';
 import lostItemRoutes from './routes/lostItem.js';
+import claimRoutes from './routes/claimRoutes.js';
+
 
 dotenv.config();
 
@@ -21,18 +23,23 @@ const PORT = process.env.PORT || 3000;
 app.use(cors());
 app.use(express.json());
 app.use('/uploads', express.static('backend/uploads'));
-
+app.use('/api/claim_requests', claimRoutes);
 
 
 app.get('/api/items', async (req, res) => {
   try {
-    const [rows] = await pool.query('SELECT * FROM items ORDER BY lost_date DESC');
+    const [rows] = await pool.query(
+      `SELECT * FROM items
+       WHERE status != 'claimed'
+       ORDER BY lost_date DESC`
+    );
     res.json(rows);
   } catch (err) {
     console.error('❌ 查詢失物清單失敗:', err);
     res.status(500).json({ error: '伺服器錯誤' });
   }
 });
+
 
 app.get('/api/my-claims', async (req, res) => {
   const { user_id } = req.query;
